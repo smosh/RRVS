@@ -11,14 +11,19 @@ from camera_bbb import BBBCam
 cam = BBBCam()
 
 class Receiver(Protocol):
+    frame_num = -1
     def dataReceived(self, data):
         if 'get_frame' in data:
             jpg = cam.get_frame()
+            self.frame_num += 1
             code = b'img'
             count = bytes(str(len(jpg)))
             
             # write out u
-            self.transport.write(b';'.join([code,count,jpg]))
+            self.transport.write(b';'.join([code,
+                                            count,
+                                            str(frame_num),
+                                            jpg]))
             print("sent a %s byte img" % count)
 
 
