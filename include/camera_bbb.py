@@ -31,7 +31,6 @@ class BBBCam(base_camera.BaseCamera):
             # encode as a jpeg image and return it
             yield cv2.imencode('.jpg', img)[1].tobytes()
 
-
 def main():
     c = BBBCam()
     

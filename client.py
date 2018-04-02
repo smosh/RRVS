@@ -1,6 +1,25 @@
+import os
+import struct
+import numpy as np
+
 from twisted.internet.protocol import Protocol, ReconnectingClientFactory
 from twisted.internet.endpoints import TCP4ServerEndpoint
 from twisted.internet import reactor
+
+import cv2
+
+#IP_ADDRESS = '10.0.0.56'
+IP_ADDRESS = 'localhost'
+
+def convertBytesToHexStr(data):
+    return ''.join([hex(ord(i)) for i in data])
+
+def bytes2cv(buf):
+    img = struct.unpack('B'*len(buf), buf)
+    img = np.array(img, np.uint8)
+    img = cv2.imdecode(img, cv2.CV_LOAD_IMAGE_UNCHANGED)
+
+    return img
 
 class Message(Protocol):
 
@@ -43,32 +62,35 @@ class Message(Protocol):
 
     def async_msg_parser(self):
         # process image frames
+        print('----')
         if self.msg['type'] == 'img':
+            nargs = 4
             # self.process_frame
-            msg_args = self.msg['buffer'].split(';')
-            if len(msg_args) < 3:
+            msg_args = self.msg['buffer'].split(';',nargs - 1)
+            if len(msg_args) < (nargs):
                 return None
                 
             self.data['img_size'] = eval(msg_args[1])
 
-            self.msg['header_offset'] = len(msg_args[0] + ';' + msg_args[1] + ';')
+            self.msg['header_offset'] = len(msg_args[0] + ';' + msg_args[1] + ';' +  msg_args[2] + ';') #TODO: write arg parser
 
-            goal_count = self['img_size'] + self.msg['header_offset']
+            goal_count = self.data['img_size'] + self.msg['header_offset']
 
+            image_simple = convertBytesToHexStr(msg_args[3])
             if len(self.msg['buffer']) >= goal_count:
-                self.data['img'] = msg_args[2]
+                self.data['img'] = msg_args[3]
                 return True
 
         else:
             print("unrec datatype")
             return False
 
-xx
+
 
     def async_read_packet(self, data):
         new_packet = self.msg['bus_idle'] == True
-        msg_type_known = self.
 
+        # --- Initialize packet if new
         if new_packet:
             self.msg['buffer'] = data
             self.msg['count'] = len(data)
@@ -81,75 +103,56 @@ xx
         else:
             self.msg['buffer'] += data
             self.msg['count'] += len(data)
+
+        # -----
         
+        # --- parse args if possible
         if self.msg['type'] is None:
             msg_args = self.msg['buffer'].split(';')
             if len(msg_args) > 1:
                 self.msg['type'] = msg_args[0]
         else:
-            return None
+            pass
+
 
         # at this point, there is enough information to run the message parser  
-        self.async_msg_parser()
-
-
+        msg_done = self.async_msg_parser()
      
         if msg_done:
+            print(self.msg['buffer'][0: self.msg['header_offset']])
+            self.msg['bus_idle'] = True #self.releasebus()
             return True # sucess!
             
         else:
-            return False # not down yet
-            = self.async_msg_parser()
+            return False # not done yet
             
 
-        
+    def showFrame(self, img):
+        cv2.imshow('frame', img)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            exit(0)
 
     def dataReceived(self, data):
         if self.state['expecting_frame']:
-            self.async_read_packet(data)
+            success = self.async_read_packet(data)
+
+            if success:
+                # vvvvv
+                #TODO: self.writeToImgFile()
+                jpg = self.data['img']
+                with open('.img.jpg', 'wb') as fp:
+                    fp.write(jpg)
+
+                print("wrote %.2fkB file" % (len(jpg)/1000.0))
+                os.system('mv .img.jpg img.jpg')
+
+                # ^^^^^^^
+
+                img = bytes2cv(jpg)
+                self.showFrame(img)
 
         else:
             print("received inappropiate packet")
-
-
-            if self.state['frame_start'] == False:
-
-
-
-                self.msg['buffer'] = data
-                self.msg['count']  = len(data)
-
-                # determine type of message
-                msg = self.msg['buffer']
-                msg = msg.split(';')
-                self.msg['type'] = msg[0]
-                self.data['img_size'] = eval(msg[1])
-                self.msg['header_offset'] = (2 
-                    + len(self.msg['type']) 
-                    + len(msg[1])
-                )
-
-                # set start frame flag
-                self.state['frame_start'] = True
-
-            # frame already started
-            else:
-                # update msg buffer
-                self.msg['buffer'] += data
-                self.msg['count'] += len(data)
-
-                # 
-
-                if self.msg['count'] >= (self.data['img_size'] + self.msg['header_offset'] - 4): #4=fudge value
-                    self.state['expecting_frame'] = False
-                    self.state['frame_start'] = False
-                    #print('collected %d byte packet.' % (self.msg['count']))
-                
-                    a = self.msg['header_offset']
-                    self.data['img'] = self.msg['buffer'][a:-1]
-                
-        else:
-            print('Received data (%d bytes), but not sure what to do with it! (%s)' % (len(data), data[0:12]))
 
 class MessageFactory(ReconnectingClientFactory):
 
@@ -167,5 +170,5 @@ class MessageFactory(ReconnectingClientFactory):
     def clientConnectionFailed(self, connector, reason):
         pass
 
-reactor.connectTCP('10.0.0.56', 5000, MessageFactory())
+reactor.connectTCP(IP_ADDRESS, 5000, MessageFactory())
 reactor.run()
