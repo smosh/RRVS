@@ -18,8 +18,8 @@ class BBBCam(base_camera.BaseCamera):
     
     def frames(self):
         camera_feed = cv2.VideoCapture(self.video_source)
-        camera_feed.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH,320)
-        camera_feed.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT,240)
+        camera_feed.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH,480)
+        camera_feed.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT,360)
         if not camera_feed.isOpened():
             raise RuntimeError('Could not start camera.')
 
@@ -28,7 +28,7 @@ class BBBCam(base_camera.BaseCamera):
             _, img = camera_feed.read()
 
             # encode as a jpeg image and return it
-            yield cv2.imencode('.jpg', img)[1].tobytes()
+            yield cv2.imencode('.jpg', img, [cv2.IMWRITE_JPEG_QUALITY, 20])[1].tobytes()
 
 def main():
     c = BBBCam()
