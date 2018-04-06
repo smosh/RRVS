@@ -8,7 +8,8 @@ class Feed(object):
         self.name = name
         self.path = path
 
-        video_idx = glob.glob('/dev/video*').index(path)
+        video_idx = path.split('video')[-1]
+        video_idx = int(video_idx)
         self.camera = Camera(video_idx)
 
     def get_frame(self):
