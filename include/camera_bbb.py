@@ -7,18 +7,17 @@ class FrameRate(object):
         self.buf = np.zeros()
 
 class BBBCam(base_camera.BaseCamera):
-    video_source = 0
 
-    def __init__(self):
+    def __init__(self, source):
+        self.video_source = source
         super(BBBCam, self).__init__()
 
-    @staticmethod
-    def set_video_source(source):
-        BBBCam.video_source = source
+
+    #def set_video_source(self, source):
+    #    self.video_source = source
     
-    @staticmethod
-    def frames():
-        camera_feed = cv2.VideoCapture(BBBCam.video_source)
+    def frames(self):
+        camera_feed = cv2.VideoCapture(self.video_source)
         camera_feed.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH,320)
         camera_feed.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT,240)
         if not camera_feed.isOpened():
