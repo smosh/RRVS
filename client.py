@@ -26,7 +26,7 @@ class Message(Protocol):
     def __init__(self):
         self.config = {}
         self.config['feed_running'] = False
-        self.config['frame_rate'] = 15.0 # hz
+        self.config['frame_rate'] = 5.0 # hz
 
         self.state = {}
         self.state['expecting_frame'] = False
