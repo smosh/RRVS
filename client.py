@@ -8,8 +8,8 @@ from twisted.internet import reactor
 
 import cv2
 
-#IP_ADDRESS = '10.0.0.56'
-IP_ADDRESS = 'localhost'
+IP_ADDRESS = '10.0.0.56'
+#IP_ADDRESS = 'localhost'
 
 def convertBytesToHexStr(data):
     return ''.join([hex(ord(i)) for i in data])
@@ -26,7 +26,7 @@ class Message(Protocol):
     def __init__(self):
         self.config = {}
         self.config['feed_running'] = False
-        self.config['frame_rate'] = 5.0 # hz
+        self.config['frame_rate'] = 15.0 # hz
 
         self.state = {}
         self.state['expecting_frame'] = False
