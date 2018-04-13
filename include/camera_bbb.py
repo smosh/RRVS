@@ -18,8 +18,8 @@ class BBBCam(base_camera.BaseCamera):
     
     def frames(self):
         camera_feed = cv2.VideoCapture(self.video_source)
-        camera_feed.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH,480)
-        camera_feed.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT,360)
+        camera_feed.set(cv2.CAP_PROP_FRAME_WIDTH,480)
+        camera_feed.set(cv2.CAP_PROP_FRAME_HEIGHT,360)
         if not camera_feed.isOpened():
             raise RuntimeError('Could not start camera.')
 

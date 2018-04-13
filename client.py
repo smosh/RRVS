@@ -8,8 +8,8 @@ from twisted.internet import reactor
 
 import cv2
 
-IP_ADDRESS = '10.0.0.56'
-#IP_ADDRESS = 'localhost'
+#IP_ADDRESS = '10.0.0.56'
+IP_ADDRESS = 'localhost'
 
 def convertBytesToHexStr(data):
     return ''.join([hex(ord(i)) for i in data])
@@ -17,7 +17,7 @@ def convertBytesToHexStr(data):
 def bytes2cv(buf):
     img = struct.unpack('B'*len(buf), buf)
     img = np.array(img, np.uint8)
-    img = cv2.imdecode(img, cv2.CV_LOAD_IMAGE_UNCHANGED)
+    img = cv2.imdecode(img, cv2.IMREAD_UNCHANGED)
 
     return img
 
