@@ -59,9 +59,17 @@ class Receiver(Protocol):
 
 class VideoServerFactory(Factory):
     protocol = Receiver
+    auto_refresh = True
 
     def __init__(self):
-        pass
+        self.refresh()
+    
+    def refresh(self):
+        cam.refresh_feeds()
+
+        if self.auto_refresh:
+            reactor.callLater(1.0, self.refresh)
+
 
 # Connect to the IP Address
 endpoint = TCP4ServerEndpoint(reactor, 5000)

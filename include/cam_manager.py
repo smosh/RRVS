@@ -52,14 +52,15 @@ class CamManager(object):
         else:
             print("cam_manager.py: unable to find a free feed name!")
 
-    def kill_feed(name):
-        for feed in self.feed.items():
+    def kill_feed(self, name):
+        for feed in self.feed.values():
             if name == feed.name:
                 del self.feed[feed.name]
 
     def refresh_feeds(self):
         available_paths = glob.glob('/dev/video*')
-        list_of_active_feeds = self.feed.items()
+        list_of_active_feeds = self.feed.values()
+        print(available_paths)
 
         # kill inactive feeds
         for feed in list_of_active_feeds:
@@ -71,7 +72,7 @@ class CamManager(object):
                 self.kill_feed(feed.name)
 
         # update lise of active feeds
-        list_of_active_feeds = self.feed.items()
+        list_of_active_feeds = self.feed.values()
         
         # create new feeds
         for path in available_paths:
