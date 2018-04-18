@@ -13,6 +13,7 @@ import cv2
 IP_ADDRESS = 'localhost'
 
 def convertBytesToHexStr(data):
+    import pdb; pdb.set_trace()
     return ''.join([hex(ord(i)) for i in data])
 
 def bytes2cv(buf):
@@ -22,7 +23,7 @@ def bytes2cv(buf):
 
     return img
 
-MASTER_FPS = 10.0
+MASTER_FPS = 20.0
 FRAME_CLK = time.time()
 
 def check_frame_rate():
@@ -66,7 +67,7 @@ class Message(Protocol):
         self.get_frame()
 
     def get_frame(self):
-        self.transport.write('get_frame')
+        self.transport.write(b'get_frame')
         self.state['expecting_frame'] = True
 
         if self.config['feed_running']:
@@ -76,16 +77,16 @@ class Message(Protocol):
     def async_msg_parser(self):
         # process image frames
         print('----')
-        if self.msg['type'] == 'img':
+        if self.msg['type'] == b'img':
             nargs = 4
             # self.process_frame
-            msg_args = self.msg['buffer'].split(';',nargs - 1)
+            msg_args = self.msg['buffer'].split(b';',nargs - 1)
             if len(msg_args) < (nargs):
                 self.data['status'] = 'not-done'
                 return 'not-done'
                 
             self.data['img_size']     = eval(msg_args[1])
-            self.msg['header_offset'] = len(msg_args[0] + ';' + msg_args[1] + ';' +  msg_args[2] + ';') #TODO: write arg parser
+            self.msg['header_offset'] = len(msg_args[0] + b';' + msg_args[1] + b';' +  msg_args[2] + b';') #TODO: write arg parser
             goal_count                = self.data['img_size'] + self.msg['header_offset']
 
             if self.data['img_size'] == 0:
@@ -100,7 +101,6 @@ class Message(Protocol):
                 self.data['img'] = jpg
                 return 'no-image'
 
-            image_simple = convertBytesToHexStr(msg_args[3])
             if len(self.msg['buffer']) >= goal_count:
                 self.data['img'] = msg_args[3]
                 self.data['status'] = 'done'
@@ -134,7 +134,7 @@ class Message(Protocol):
         
         # --- parse args if possible
         if self.msg['type'] is None:
-            msg_args = self.msg['buffer'].split(';')
+            msg_args = self.msg['buffer'].split(b';')
             if len(msg_args) > 1:
                 self.msg['type'] = msg_args[0]
         else:
@@ -145,7 +145,6 @@ class Message(Protocol):
         msg_status = self.async_msg_parser()
      
         if msg_status == 'done':
-            print(self.msg['buffer'][0: self.msg['header_offset']])
             self.msg['bus_idle'] = True #self.releasebus()
             return True # sucess!
             
@@ -185,7 +184,7 @@ class Message(Protocol):
                     # ^^^^^^^
 
                     img = bytes2cv(jpg)
-                    self.showFrame(img)
+                    #self.showFrame(img)
                     check_frame_rate()
                 else:
                     pass

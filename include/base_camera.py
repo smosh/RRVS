@@ -58,6 +58,8 @@ class BaseCamera(object):
     event = CameraEvent()
 
     def __init__(self):
+        self.rlock = threading.RLock()
+
         """Start the background camera thread if it isn't running yet."""
         if BaseCamera.thread is None: #TODO: delete this code
             # start background frame thread
@@ -66,6 +68,7 @@ class BaseCamera(object):
             # wait until frames are available
             while self.get_frame() is None:
                 time.sleep(0)
+        
 
     def start_camera(self):
         BaseCamera.last_access = time.time()
@@ -76,6 +79,7 @@ class BaseCamera(object):
 
     def get_frame(self):
         """Return the current camera frame."""
+        self.rlock.acquire()
         if BaseCamera.thread is None:
             self.start_camera()
 
@@ -83,6 +87,8 @@ class BaseCamera(object):
             BaseCamera.thread.start()
             time.sleep(3)
             print('sleeping 3 seconds')
+
+        self.rlock.release()
         BaseCamera.last_access = time.time()
 
         # wait for a signal from the camera thread
@@ -100,13 +106,25 @@ class BaseCamera(object):
         print('Starting camera thread.')
         frames_iterator = self.frames()
         for frame in frames_iterator:
-            BaseCamera.frame = frame
-            BaseCamera.event.set()  # send signal to clients
+            if frame is not None:
+                BaseCamera.frame = frame
+                BaseCamera.event.set()  # send signal to clients
 
-            # if there hasn't been any clients asking for frames in
-            # the last 10 seconds then stop the thread
-            if time.time() - BaseCamera.last_access > 1:
+                # if there hasn't been any clients asking for frames in
+                # the last 10 seconds then stop the thread
+                if time.time() - BaseCamera.last_access > 1:
+                    frames_iterator.close()
+                    print('Stopping camera thread due to inactivity.')
+                    break
+            else:
+                BaseCamera.frame = frame
+                BaseCamera.event.set()  # send signal to clients
+                
                 frames_iterator.close()
-                print('Stopping camera thread due to inactivity.')
+                print('base_camera.py:Error. Killing camera thread.')
                 break
+
+
+        self.rlock.acquire()
         BaseCamera.thread = None
+        self.rlock.release()
