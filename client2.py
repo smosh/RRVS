@@ -23,7 +23,7 @@ def bytes2cv(buf):
 
     return img
 
-MASTER_FPS = 20.0
+MASTER_FPS = 3.0
 FRAME_CLK = time.time()
 
 def check_frame_rate():

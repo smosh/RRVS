@@ -1,4 +1,5 @@
 import time
+import logging
 import threading
 try:
     from greenlet import getcurrent as get_ident
@@ -8,6 +9,16 @@ except ImportError:
     except ImportError:
         from _thread import get_ident
 
+# configure logging system
+logging.basicConfig(format='%(asctime)s :: %(message)s',
+    filename='log.txt', 
+    level=logging.DEBUG,
+    datefmt='%m/%d/%Y %I:%M:%S %p')
+        
+
+READ_FRAME_TIMER = time.time()
+READ_FRAME_COUNTER = 0
+READ_FRAME_RATEMEAS = 0.0
 
 class CameraEvent(object):
     """An Event-like class that signals all active clients when a new frame is
@@ -52,16 +63,20 @@ class CameraEvent(object):
 
 
 class BaseCamera(object):
-    thread = None  # background thread that reads frames from camera
-    frame = None  # current frame is stored here by background thread
-    last_access = 0  # time of last client access to the camera
     event = CameraEvent()
 
     def __init__(self):
+        self.thread = None  # background thread that reads frames from camera
+        self.frame = None  # current frame is stored here by background thread
+        self.last_access = 0  # time of last client access to the camera
+
         self.rlock = threading.RLock()
 
+        self.settings = {}
+        self.settings['timeout'] = 100.0
+
         """Start the background camera thread if it isn't running yet."""
-        if BaseCamera.thread is None: #TODO: delete this code
+        if self.thread is None: #TODO: delete this code
             # start background frame thread
             self.start_camera()
  
@@ -71,31 +86,31 @@ class BaseCamera(object):
         
 
     def start_camera(self):
-        BaseCamera.last_access = time.time()
+        self.last_access = time.time()
 
         # start background frame thread
-        BaseCamera.thread = threading.Thread(target=self._thread)
-        BaseCamera.thread.start()
+        self.thread = threading.Thread(target=self._thread)
+        self.thread.start()
 
     def get_frame(self):
         """Return the current camera frame."""
+
+        # auto-start the camera as needed
         self.rlock.acquire()
-        if BaseCamera.thread is None:
+        if self.thread is None:
             self.start_camera()
-
-        if not BaseCamera.thread.isAlive():
-            BaseCamera.thread.start()
-            time.sleep(3)
-            print('sleeping 3 seconds')
-
+        if not self.thread.isAlive():
+            self.thread.start()
         self.rlock.release()
-        BaseCamera.last_access = time.time()
+
 
         # wait for a signal from the camera thread
+        self.last_access = time.time()
         BaseCamera.event.wait()
         BaseCamera.event.clear()
 
-        return BaseCamera.frame
+        # self.frame was updated in the background thread
+        return self.frame
 
     def frames(self):
         """"Generator that returns frames from the camera."""
@@ -104,20 +119,45 @@ class BaseCamera(object):
     def _thread(self):
         """Camera background thread."""
         print('Starting camera thread.')
+
+        global READ_FRAME_TIMER, READ_FRAME_COUNTER, READ_FRAME_RATEMEAS
+
+
         frames_iterator = self.frames()
         for frame in frames_iterator:
             if frame is not None:
-                BaseCamera.frame = frame
-                BaseCamera.event.set()  # send signal to clients
+
+                # shared variable: image data
+                self.frame = frame 
+
+                # signal to baseclass that the frame has been captured, 
+                # and that self.frame contains fresh data
+                BaseCamera.event.set() 
 
                 # if there hasn't been any clients asking for frames in
-                # the last 10 seconds then stop the thread
-                if time.time() - BaseCamera.last_access > 1:
-                    frames_iterator.close()
+                # the last x seconds then stop the thread
+                if (time.time() - self.last_access) > self.settings['timeout']:
                     print('Stopping camera thread due to inactivity.')
+                    frames_iterator.close()
                     break
+
+                # print out rate data
+                delta_time = time.time() - READ_FRAME_TIMER
+                READ_FRAME_RATEMEAS += (1/delta_time) / (30*5)
+                READ_FRAME_TIMER = time.time()
+                READ_FRAME_COUNTER += 1
+
+                if READ_FRAME_COUNTER >= (30*5):
+                    print('base_camera.py: reading data at %.1fHz' % (READ_FRAME_RATEMEAS))
+                    logging.debug("rate = %.1fHz" % (READ_FRAME_RATEMEAS) )
+                    READ_FRAME_COUNTER = 0
+                    READ_FRAME_RATEMEAS = 0.0
+                    READ_FRAME_TIMER = time.time()
+
+
+
             else:
-                BaseCamera.frame = frame
+                self.frame = None
                 BaseCamera.event.set()  # send signal to clients
                 
                 frames_iterator.close()
@@ -126,5 +166,5 @@ class BaseCamera(object):
 
 
         self.rlock.acquire()
-        BaseCamera.thread = None
+        self.thread = None
         self.rlock.release()

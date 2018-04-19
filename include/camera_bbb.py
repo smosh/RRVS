@@ -21,6 +21,7 @@ class BBBCam(base_camera.BaseCamera):
             camera_feed = cv2.VideoCapture(self.video_source)
             camera_feed.set(cv2.CAP_PROP_FRAME_WIDTH,480)
             camera_feed.set(cv2.CAP_PROP_FRAME_HEIGHT,360)
+            camera_feed.set(cv2.CAP_PROP_FPS, 10)
             if not camera_feed.isOpened():
                 raise RuntimeError('Could not start camera.')
         except RuntimeError:
