@@ -1,7 +1,18 @@
 import glob
+import subprocess
 from camera_bbb import BBBCam as Camera
 
 camera_names = ['primary', 'secondary']
+def get_cam_info(path):
+    '''
+    issues a the following command:
+        v4l2-ctl -d <campath> --info
+
+    and returns the results
+    '''
+    p = subprocess.Popen(['v4l2-ctl', '-d', path, '--info'], stdout=subprocess.PIPE)
+    out, _ = p.communicate()
+    return out
 
 class Feed(object):
     def __init__(self, name, path):
@@ -11,6 +22,17 @@ class Feed(object):
         video_idx = path.split('video')[-1]
         video_idx = int(video_idx)
         self.camera = Camera(video_idx)
+
+        # info
+        out = get_cam_info(self.path)
+        out = out.translate(None, b'\t')
+        out = out.split(b'\n')
+
+        for line in out:
+            #print(line)
+            if b'Card type' in line:
+                self.dev_name = line.split(b': ')[1]
+
 
     def get_frame(self):
         return self.camera.get_frame()
@@ -32,6 +54,9 @@ class CamManager(object):
             return self.feed[name].get_frame()
         else:
             return None
+
+    def print_camera_ctrls(self, name):
+        print(name)
 
 
     # #####################
@@ -56,13 +81,14 @@ class CamManager(object):
             print("cam_manager.py: unable to find a free feed name!")
 
     def kill_feed(self, name):
-        for feed in self.feed.values():
+        for feed in list(self.feed.values()):
+
             if name == feed.name:
                 del self.feed[feed.name]
 
     def refresh_feeds(self):
         available_paths = glob.glob('/dev/video*')
-        list_of_active_feeds = self.feed.values()
+        list_of_active_feeds = list(self.feed.values())
         print(available_paths)
 
         # kill inactive feeds

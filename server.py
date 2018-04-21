@@ -5,9 +5,9 @@ from twisted.internet.endpoints import TCP4ServerEndpoint
 from twisted.internet import reactor
 
 sys.path.append('./include')
-from cam_manager2 import CamManager
+from cam_manager import CamManager
 
-DEBUG_PRINT = True
+DEBUG_PRINT = False
 
 class Server(object):
     def __init__(self):
@@ -34,10 +34,15 @@ class Receiver(Protocol):
             # build the packet components
             code            = b'img'
             jpg             = self.factory.video.get_frame('primary')
-            self.frame_num += 1
-            frame_num       = bytes(str(self.frame_num), 'utf-8')
-            count           = bytes(str(len(jpg)), 'utf-8')
+            if jpg is not None:
+                self.frame_num += 1
+                count       = bytes(str(len(jpg)), 'utf-8')
+            else:
+                count       = b'0'
+                jpg         = b'0'
             
+            frame_num       = bytes(str(self.frame_num), 'utf-8')
+
             # write out u
             packet = self.packData(code, count, frame_num, jpg)
             self.transport.write(packet)

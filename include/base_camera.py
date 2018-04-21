@@ -73,7 +73,10 @@ class BaseCamera(object):
         self.rlock = threading.RLock()
 
         self.settings = {}
-        self.settings['timeout'] = 100.0
+        self.settings['timeout'] = 1.0
+
+        self.flg = {}
+        self.flg['kill_thread'] = False
 
         """Start the background camera thread if it isn't running yet."""
         if self.thread is None: #TODO: delete this code
@@ -91,6 +94,10 @@ class BaseCamera(object):
         # start background frame thread
         self.thread = threading.Thread(target=self._thread)
         self.thread.start()
+
+    def kill_thread(self):
+        print("base_camera.py: cleanly killing the camera thread!")
+        self.flg['kill_thread'] = True
 
     def get_frame(self):
         """Return the current camera frame."""
@@ -116,6 +123,10 @@ class BaseCamera(object):
         """"Generator that returns frames from the camera."""
         raise RuntimeError('Must be implemented by subclasses.')
 
+    def get_error_status(self):
+        """"Generator that returns frames from the camera."""
+        raise RuntimeError('Must be implemented by subclasses.')
+
     def _thread(self):
         """Camera background thread."""
         print('Starting camera thread.')
@@ -136,8 +147,11 @@ class BaseCamera(object):
 
                 # if there hasn't been any clients asking for frames in
                 # the last x seconds then stop the thread
-                if (time.time() - self.last_access) > self.settings['timeout']:
+                if self.flg['kill_thread'] or \
+                    (time.time() - self.last_access) > self.settings['timeout']:
+
                     print('Stopping camera thread due to inactivity.')
+                    self.flg['kill_thread'] = False
                     frames_iterator.close()
                     break
 
@@ -157,12 +171,14 @@ class BaseCamera(object):
 
 
             else:
+                error = self.get_error_status()
                 self.frame = None
                 BaseCamera.event.set()  # send signal to clients
                 
                 frames_iterator.close()
-                print('base_camera.py:Error. Killing camera thread.')
+                print('base_camera.py: Error. Killing camera thread.')
                 break
+
 
 
         self.rlock.acquire()
