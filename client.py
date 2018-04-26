@@ -2,6 +2,7 @@ import os
 import struct
 import numpy as np
 import time
+import sys
 
 from twisted.internet.protocol import Protocol, ReconnectingClientFactory
 from twisted.internet.endpoints import TCP4ServerEndpoint
@@ -37,6 +38,7 @@ def check_frame_rate():
 class Message(Protocol):
 
     def __init__(self):
+        super().__init__()
         self.config = {}
         self.config['feed_running'] = False
         self.config['frame_rate'] = MASTER_FPS # hz
@@ -59,6 +61,7 @@ class Message(Protocol):
         self.msg['bus_idle'] = True
         self.msg['complete'] = False
 
+
     def connectionMade(self):
         self.start_stream()
 
@@ -67,11 +70,12 @@ class Message(Protocol):
         self.get_frame()
 
     def get_frame(self):
-        self.transport.write(b'get_frame')
+        stream_name = bytes(self.factory.stream_name, 'utf-8')
+        self.transport.write(b'get_frame;%s' % (stream_name))
         self.state['expecting_frame'] = True
 
         if self.config['feed_running']:
-            rate = self.config['frame_rate']
+            rate = self.factory.frame_rate
             reactor.callLater(1.0/rate, self.get_frame)
 
     def async_msg_parser(self):
@@ -162,9 +166,11 @@ class Message(Protocol):
             
 
     def showFrame(self, img):
-        cv2.imshow('frame', img)
+        stream_name = self.factory.stream_name
+        cv2.imshow(stream_name, img)
         if cv2.waitKey(1) & 0xFF == ord('q'):
-            exit(0)
+            self.transport.loseConnection()
+            reactor.stop()
 
     def dataReceived(self, data):
         if self.state['expecting_frame']:
@@ -194,13 +200,29 @@ class Message(Protocol):
 
 class MessageFactory(ReconnectingClientFactory):
 
+    def __init__(self, stream_name=None):
+        super().__init__() 
+        self.stream_name = stream_name
+        self.frame_rate = 15.0 #frames per second
+
+        self.enable = {}
+        self.enable['gui'] = False
+
+    def attach_stream(self, stream_name):
+        self.stream_name = stream_name
+
+    def enable_gui(self, value):
+        self.enable['gui'] = value
+
     def startedConnecting(self, connector):
         print('Started to connect')
         ReconnectingClientFactory.resetDelay(self)
         #protocol.connectionMade()
 
     def buildProtocol(self, addr):
-        return Message()
+        p = Message()
+        p.factory = self
+        return p
 
     def clientConnectionLost(self, connector, reason):
         print('Lost connection. Reason:', reason)
@@ -209,5 +231,43 @@ class MessageFactory(ReconnectingClientFactory):
     def clientConnectionFailed(self, connector, reason):
         pass
 
-reactor.connectTCP(IP_ADDRESS, 5000, MessageFactory())
-reactor.run()
+class Client(object):
+    def __init__(self):
+        self.enable = {}
+        self.enable['gui'] = False
+
+        self.ip = None
+        self.stream_name = None
+        self.port = 5000
+
+        self.factory = MessageFactory()
+
+    def attach_IP(self, ip_address):
+        self.ip = ip_address
+
+    def attach_stream(self, stream_name):
+        self.stream_name = stream_name
+        self.factory.attach_stream(stream_name)
+
+    def enable_gui(self, value):
+        self.enable['gui'] = value
+        self.factory.enable_gui(value)
+
+    def run(self):
+        reactor.connectTCP(self.ip, self.port, self.factory)
+        reactor.run()
+
+if __name__ == '__main__':
+    if len(sys.argv) < 3:
+        print('usage:\n\tclient.py <ip> <stream_name>')
+        exit()
+    ip = sys.argv[1]
+    stream_name = sys.argv[2]
+
+
+
+    client = Client()
+    client.attach_IP(ip)
+    client.attach_stream(stream_name)
+    client.enable_gui(True)
+    client.run()

@@ -15,18 +15,15 @@ def bytes2cv(buf):
 
     return img
 
+SELECTED_FEED = 'front'
 
 def main():
     video = Video()
-    feed = video.feed['primary']
-    import pdb; pdb.set_trace()
-    print(name)
-    exit()
 
     print('test_camera.py: collecting camera data...')
     i = 0
     while (i <= 60) or True:
-        img = video.get_frame('primary')
+        img = video.get_frame(SELECTED_FEED)
         img = bytes2cv(img)
         i += 1
 

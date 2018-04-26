@@ -5,7 +5,7 @@ TODO PHASE1:
 1. pyv restart_server
 1. pyv test_performance
 1. pyv watch 0
-1. pyv assign 0 front
+1. pyv assign 0 frontprimary
 1. pyv watch front
 1. pyv list
 1. pyv set auto_map true

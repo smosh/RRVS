@@ -92,6 +92,20 @@ def main():
     elif program == 'test_camera':
         os.system('python test_camera.py')
 
+    elif program == 'watch':
+        if len(sys.argv) < 4:
+            print("usage:\n\twatch <ip> <camera-name>")
+            exit()
+        
+        ip = sys.argv[2]
+        stream_name = sys.argv[3]
+
+        os.system('python utils/watch-stream.py %s %s' % (ip, stream_name))
+
+    elif program == 'assign':
+        os.system('python utils/assign-cams.py')
+
+
 
     else:
         usage()

@@ -153,6 +153,7 @@ class BaseCamera(object):
                     print('Stopping camera thread due to inactivity.')
                     self.flg['kill_thread'] = False
                     frames_iterator.close()
+                    self.cleanup()
                     break
 
                 # print out rate data
@@ -171,7 +172,7 @@ class BaseCamera(object):
 
 
             else:
-                error = self.get_error_status()
+                #error = self.get_error_status()
                 self.frame = None
                 BaseCamera.event.set()  # send signal to clients
                 

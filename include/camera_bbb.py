@@ -23,6 +23,7 @@ class BBBCam(base_camera.BaseCamera):
     def frames(self):
         try:
             camera_feed = cv2.VideoCapture(self.video_source)
+            self.camera_feed = camera_feed
             camera_feed.set(cv2.CAP_PROP_FRAME_WIDTH,320)
             camera_feed.set(cv2.CAP_PROP_FRAME_HEIGHT,240)
             #camera_feed.set(cv2.CAP_PROP_FPS, 10)
@@ -60,6 +61,9 @@ class BBBCam(base_camera.BaseCamera):
 
     def get_error_status(self):
         return self.error
+
+    def cleanup(self):
+        self.camera_feed.release()
 
 def main():
     c = BBBCam()

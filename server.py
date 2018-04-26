@@ -31,9 +31,19 @@ class Receiver(Protocol):
 
     def dataReceived(self, data):
         if b'get_frame' in data:
+            # parse the parts of the message
+            package = data.split(b';')
+            if len(package) > 2:
+                return
+
+            stream_name = package[1]
+            
+            stream_name = stream_name.decode('utf-8')
+
+
             # build the packet components
             code            = b'img'
-            jpg             = self.factory.video.get_frame('primary')
+            jpg             = self.factory.video.get_frame(stream_name)
             if jpg is not None:
                 self.frame_num += 1
                 count       = bytes(str(len(jpg)), 'utf-8')
