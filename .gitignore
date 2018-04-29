@@ -4,6 +4,6 @@ img.jpg
 output/*
 .vscode/*
 *log.txt
-*dist/*
-rrvs/HelloWorld.egg-info/*
+/dist/
+/*.egg-info
 .trash/*

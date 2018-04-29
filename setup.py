@@ -9,20 +9,23 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(
-    name = "hello_setuptools",
-    version = "0.0.1",
+    name = "rrvs",
+    version = "0.1",
     author = "Josh Smith",
-    author_email = "andrewjcarter@gmail.com",
-    description = ("An demonstration of how to create, document, and publish "
-                                   "to the cheese shop a5 pypi.org."),
-    license = "BSD",
-    keywords = "example documentation tutorial",
-    url = "",
-    packages=['an_example_pypi_project', 'tests'],
-    long_description=read('README'),
+    author_email = "jrosmit@gmail.com",
+    description = ("A videoserver for embedded systems"),
+    license = "MIT",
+    url = "https://bitbucket.org/smosh/pyvideoserver",
+    packages=['rrvs'],
+    include_package_data=True,
+    long_description=read('README.md'),
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Topic :: Utilities",
         "License :: OSI Approved :: BSD License",
     ],
+    install_requires=[
+        "twisted",
+        'opencv-python'
+    ]
 )
