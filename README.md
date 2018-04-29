@@ -1,3 +1,11 @@
+
+# Install
+
+To install the package, and all of its dependencies:
+
+    make install
+
+
 # pyVideoServer
 
 TODO PHASE1:
@@ -16,3 +24,4 @@ TODO PHASE2:
 TODO PHASE3:
 
 1. pyv list
+
