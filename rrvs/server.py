@@ -1,10 +1,16 @@
 import sys
+import os
 
 from twisted.internet.protocol import Factory, Protocol
 from twisted.internet.endpoints import TCP4ServerEndpoint
 from twisted.internet import reactor
 
-sys.path.append('./include')
+# include other stuff
+ROOT_DIR = os.path.join(os.path.dirname(__file__), './')
+INCLUDE_DIR = os.path.join(ROOT_DIR, 'include')
+sys.path.append(INCLUDE_DIR)
+
+# cam manager
 from cam_manager import CamManager
 
 DEBUG_PRINT = False

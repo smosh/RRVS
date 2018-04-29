@@ -4,6 +4,8 @@ img.jpg
 output/*
 .vscode/*
 *log.txt
-/dist/
+dist/*
+build/*
 /*.egg-info
 .trash/*
+*.spec

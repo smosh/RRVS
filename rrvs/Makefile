@@ -4,4 +4,7 @@ clean:
 	find . -name \*log.txt -delete
 
 rm_setup:
-	rm -rf build dist HelloWorld.egg-info
+	rm -rf build dist
+
+build_exec:
+	pyinstaller --onefile rrvs/client.py

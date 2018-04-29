@@ -4,6 +4,8 @@ import numpy as np
 import time
 import sys
 
+ROOT_DIR = os.path.join(os.path.dirname(__file__), './')
+
 from twisted.internet.protocol import Protocol, ReconnectingClientFactory
 from twisted.internet.endpoints import TCP4ServerEndpoint
 from twisted.internet import reactor
@@ -98,7 +100,8 @@ class Message(Protocol):
 
                 # read the image anyway
                 jpg = b''
-                with open('./static/no-img.jpg', 'rb') as f:
+                fp = os.path.join(ROOT_DIR, 'static/no-img.jpg')
+                with open(fp, 'rb') as f:
                     for line in f:
                         jpg += line
 
@@ -181,11 +184,6 @@ class Message(Protocol):
                 #TODO: self.writeToImgFile()
                 if (self.data['status'] == 'done') or (self.data['status'] == 'no-image'):
                     jpg = self.data['img']
-                    with open('.img.jpg', 'wb') as fp:
-                        fp.write(jpg)
-
-                    print("wrote %.2fkB file" % (len(jpg)/1000.0))
-                    os.system('mv .img.jpg img.jpg')
 
                     # ^^^^^^^
 

@@ -164,7 +164,7 @@ class BaseCamera(object):
 
                 if READ_FRAME_COUNTER >= (30*5):
                     print('base_camera.py: reading data at %.1fHz' % (READ_FRAME_RATEMEAS))
-                    logging.debug("rate = %.1fHz" % (READ_FRAME_RATEMEAS) )
+                    #logging.debug("rate = %.1fHz" % (READ_FRAME_RATEMEAS) )
                     READ_FRAME_COUNTER = 0
                     READ_FRAME_RATEMEAS = 0.0
                     READ_FRAME_TIMER = time.time()

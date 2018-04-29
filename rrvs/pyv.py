@@ -4,6 +4,10 @@ import pdb
 import subprocess, signal
 import os
 
+ROOT_DIR = os.path.join(os.path.dirname(__file__), './')
+#INCLUDE_DIR = os.path.join(ROOT_DIR, 'include')
+#sys.path.append(INCLUDE_DIR)
+
 def usage():
     msg = '''
     --> pyv cmd *args
@@ -72,7 +76,7 @@ def main():
         killed = kill_if_running('server.py')
 
         # run the server. 
-        os.system('python server.py > /dev/null 2>&1 &')
+        os.system('python %s > /dev/null 2>&1 &' % os.path.join(ROOT_DIR,'server.py'))
         
         if killed:
             print("restarted the server")
