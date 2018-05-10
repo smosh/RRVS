@@ -106,8 +106,13 @@ def main():
             stream_name = sys.argv[3]
             os.system('python  %s %s %s' % (os.path.join(ROOT_DIR, 'utils/watch-stream.py'), ip, stream_name))
         elif len(sys.argv) == 3:
-            idx = sys.argv[2]
-            os.system('python  %s %s' % (os.path.join(ROOT_DIR, 'utils/test_camera.py'), idx))
+            if ('.' in sys.argv[2]) or (sys.argv[2] == 'localhost'):
+                ip = sys.argv[2]
+                os.system('python  %s %s' % (os.path.join(ROOT_DIR, 'utils/watch-stream.py'), ip))
+        
+            else:
+                idx = sys.argv[2]
+                os.system('python  %s %s' % (os.path.join(ROOT_DIR, 'utils/test_camera.py'), idx))
         
 
 

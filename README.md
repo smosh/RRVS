@@ -12,19 +12,15 @@ This will install rrvs and associated dependencies to your current python enviro
 
 To run a camera that is locally connected to your system:
 
-    python -m rrvs.utils.watch 0 # <--- displays video feed from device at /dev/video0
+    python -m rrvs.utils.test_camera 0 # <--- displays video feed from device at /dev/video0
     
 To stream video over a network:
-
-    python -m rrvs.ctrl restart_stream
-    python -m rrvs.ctrl watch localhost   # <--- displays a stream that is being shared by the server
-    
-Note, streams can be given unique names, such that they can be individually called for over a network connection:
 
     # ensure that at least one camera is connected to your system
     python -m rrvs.ctrl assign            # follow the wizards instructions
     python -m rrvs.ctrl restart_server    # server will update with new assignments
     python -m rrvs.ctrl watch localhost <name-of-feed>
+    
     
 ## Compatibility Notes
 
