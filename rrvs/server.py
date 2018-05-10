@@ -1,3 +1,4 @@
+from builtins import super
 import sys
 import os
 
@@ -30,7 +31,7 @@ class Server(object):
 
 class Receiver(Protocol):
     def __init__(self):
-        super().__init__()
+        #super().__init__()
 
         # initialize parameters
         self.frame_num = -1
@@ -52,12 +53,12 @@ class Receiver(Protocol):
             jpg             = self.factory.video.get_frame(stream_name)
             if jpg is not None:
                 self.frame_num += 1
-                count       = bytes(str(len(jpg)), 'utf-8')
+                count       = b'%d' % len(jpg)
             else:
                 count       = b'0'
                 jpg         = b'0'
             
-            frame_num       = bytes(str(self.frame_num), 'utf-8')
+            frame_num       = b'%d' % self.frame_num
 
             # write out u
             packet = self.packData(code, count, frame_num, jpg)

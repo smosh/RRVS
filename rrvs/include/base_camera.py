@@ -129,7 +129,7 @@ class BaseCamera(object):
 
     def _thread(self):
         """Camera background thread."""
-        print('Starting camera thread.')
+        #print('Starting camera thread.')
 
         global READ_FRAME_TIMER, READ_FRAME_COUNTER, READ_FRAME_RATEMEAS
 
@@ -150,7 +150,7 @@ class BaseCamera(object):
                 if self.flg['kill_thread'] or \
                     (time.time() - self.last_access) > self.settings['timeout']:
 
-                    print('Stopping camera thread due to inactivity.')
+                    #print('Stopping camera thread due to inactivity.')
                     self.flg['kill_thread'] = False
                     frames_iterator.close()
                     self.cleanup()

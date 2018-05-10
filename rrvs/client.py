@@ -1,3 +1,5 @@
+from builtins import super, bytes
+
 import os
 import struct
 import numpy as np
@@ -40,7 +42,7 @@ def check_frame_rate():
 class Message(Protocol):
 
     def __init__(self):
-        super().__init__()
+        #super().__init__()
         self.config = {}
         self.config['feed_running'] = False
         self.config['frame_rate'] = MASTER_FPS # hz
@@ -72,7 +74,7 @@ class Message(Protocol):
         self.get_frame()
 
     def get_frame(self):
-        stream_name = bytes(self.factory.stream_name, 'utf-8')
+        stream_name = self.factory.stream_name.encode('utf-8')
         self.transport.write(b'get_frame;%s' % (stream_name))
         self.state['expecting_frame'] = True
 
@@ -199,7 +201,7 @@ class Message(Protocol):
 class MessageFactory(ReconnectingClientFactory):
 
     def __init__(self, stream_name=None):
-        super().__init__() 
+        #super().__init__() 
         self.stream_name = stream_name
         self.frame_rate = 15.0 #frames per second
 

@@ -15,17 +15,17 @@ setup(
     author_email = "jrosmit@gmail.com",
     description = ("A videoserver for embedded systems"),
     license = "MIT",
-    url = "https://bitbucket.org/smosh/pyvideoserver",
+    url = "https://bitbucket.org/smosh/rather-robust-video-server",
     packages=['rrvs'],
     include_package_data=True,
     long_description=read('README.md'),
     classifiers=[
-        "Development Status :: 3 - Alpha",
         "Topic :: Utilities",
         "License :: OSI Approved :: BSD License",
     ],
     install_requires=[
         "twisted",
-        'opencv-python'
+        'opencv-python',
+        'future',
     ]
 )

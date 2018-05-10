@@ -13,7 +13,7 @@ def get_camera_mappings():
     mapping_file = os.path.join(CFG_DIR, 'mapping.cfg')
     with open(mapping_file, 'r') as f:
         for line in f:
-            print(repr(line))
+            #print(repr(line))
             if line == '':
                 continue
             buf += line
@@ -71,8 +71,9 @@ class Feed(object):
         self.name = name
         self.path = path
 
-        video_idx = path.split('video')[-1]
-        video_idx = int(video_idx)
+        video_idx       = path.split('video')[-1]
+        video_idx       = int(video_idx)
+        self.video_idx  = video_idx
 
         # info
         out = get_cam_info(self.path)
@@ -106,10 +107,36 @@ class CamManager(object):
         self.refresh_feeds()
 
     def get_frame(self, name):
-        if name in self.feed.keys():
-            return self.feed[name].get_frame()
+        if (type(name) == type(u'')):
+            if name in self.feed.keys():
+                return self.feed[name].get_frame()
+            else:
+                return None
+
+        # type must be an int
+        elif type(name) == type(4): 
+            ch = name
+            name = ''
+            # find out the feed name for the this feed
+            for key in self.feed:
+                if ch == self.feed[key].video_idx:
+                    name = self.feed[key].name
+                    break
+
+            if name != '':
+                return self.feed[name].get_frame()
+            else:
+                print("cam_manager.py: could not find a feed for ch %d!" % ch)
+                exit()
+
+        # unrec type. Print error
         else:
-            return None
+            import pdb; pdb.set_trace()
+            print("cam_manager.py: invalid type for a stream name")
+            exit()
+                    
+
+
 
     def print_camera_ctrls(self, name):
         print(name)
@@ -163,7 +190,7 @@ class CamManager(object):
     def refresh_feeds(self):
         available_paths = glob.glob('/dev/video*')
         list_of_active_feeds = list(self.feed.values())
-        print(available_paths)
+        #print(available_paths)
 
         # kill inactive feeds
         for feed in list_of_active_feeds:

@@ -1,3 +1,5 @@
+from builtins import input
+
 import glob
 import subprocess
 import os
@@ -79,14 +81,7 @@ class Mapping(object):
         self.path = None
         self.stream_name = None
         self.search_string = None
-        
-    def print(self):
-        msg = ("dev_name: %s\n" % self.dev_name) \
-            + ("path: %s\n" % self.path) \
-            + ("stream_name: %s\n" % self.stream_name) \
-            + ("search_string: %s\n" % self.search_string)
 
-        print(msg)
 
 
 class Wizard(object):
@@ -293,6 +288,7 @@ class Wizard(object):
                 elif response == '5':
                     exit()
                 else:
+                    import pdb; pdb.set_trace()
                     option = 99
 
             elif option == 1:

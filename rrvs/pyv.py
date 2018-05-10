@@ -94,20 +94,25 @@ def main():
             print("server already killed")
 
     elif program == 'test_camera':
-        os.system('python test_camera.py')
+        os.system('python %s' % os.path.join(ROOT_DIR, 'test_camera.py'))
 
     elif program == 'watch':
-        if len(sys.argv) < 4:
-            print("usage:\n\twatch <ip> <camera-name>")
+        if len(sys.argv) < 3:
+            print("usage:\n\twatch <ip> <stream-name>\n\t\tor\n\twatch <idx>")
             exit()
         
-        ip = sys.argv[2]
-        stream_name = sys.argv[3]
+        if len(sys.argv) == 4:
+            ip = sys.argv[2]
+            stream_name = sys.argv[3]
+            os.system('python  %s %s %s' % (os.path.join(ROOT_DIR, 'utils/watch-stream.py'), ip, stream_name))
+        elif len(sys.argv) == 3:
+            idx = sys.argv[2]
+            os.system('python  %s %s' % (os.path.join(ROOT_DIR, 'utils/test_camera.py'), idx))
+        
 
-        os.system('python utils/watch-stream.py %s %s' % (ip, stream_name))
 
     elif program == 'assign':
-        os.system('python utils/assign-cams.py')
+        os.system('python %s' % os.path.join(ROOT_DIR, 'utils/assign-cams.py') )
 
 
 
