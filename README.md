@@ -18,7 +18,7 @@ TODO PHASE1:
 
 TODO PHASE1.5:
 
-1. python 2 compatibility
+1. python 2 compatibility (check)
 
 TODO:
 
