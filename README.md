@@ -1,34 +1,31 @@
-# Rather Robust Video Server (pyvideoserver)
+# Rather Robust Video Server (RRVS)
 
 ## Install
 
 To install the package, and all of its dependencies:
 
-    make install
+    make install # <-- prefeably do this within a virtualenv
+    
+This will install rrvs and associated dependencies to your current python environment. Performing this command from within a virtual env will localize all installed packeges to that virtualenv.
 
-## pyVideoServer
+## Getting Started with RRVS
 
-TODO PHASE1:
+To run a camera that is locally connected to your system:
 
-1. pyv restart_server (check)
-1. pyv watch localhost front (check)
-1. pyv watch 0 (check)
-1. pyv assign (check)
-1. pyv record ./record/
+    python -m rrvs.utils.watch 0 # <--- displays video feed from device at /dev/video0
+    
+To stream video over a network:
 
-TODO PHASE1.5:
+    python -m rrvs.ctrl restart_stream
+    python -m rrvs.ctrl watch localhost   # <--- displays a stream that is being shared by the server
+    
+Note, streams can be given unique names, such that they can be individually called for over a network connection:
 
-1. python 2 compatibility (check)
+    # ensure that at least one camera is connected to your system
+    python -m rrvs.ctrl assign            # follow the wizards instructions
+    python -m rrvs.ctrl restart_server    # server will update with new assignments
+    python -m rrvs.ctrl watch localhost <name-of-feed>
+    
+## Compatibility Notes
 
-TODO:
-
-1. Write tutorial
-
-TODO PHASE2:
-
-1. share with somebody
-
-TODO PHASE3:
-
-1. pyv list
-1. pyv test_performance
+The rrvs module was written with python 3 in mind, but should always be backwards compatible with python 2.7. If any issues with running this code within python 2.7 are discovered, feel free to let me know by posting about it in the issues section.
