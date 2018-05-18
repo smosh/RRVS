@@ -4,7 +4,7 @@
 
 To install the package, and all of its dependencies:
 
-    make install # <-- prefeably do this within a virtualenv
+    make install # <-- preferably do this within a virtualenv
     
 This will install rrvs and associated dependencies to your current python environment. Performing this command from within a virtual env will localize all installed packeges to that virtualenv.
 
